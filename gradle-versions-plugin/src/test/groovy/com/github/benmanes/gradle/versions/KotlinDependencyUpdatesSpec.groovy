@@ -32,7 +32,7 @@ final class KotlinDependencyUpdatesSpec extends Specification {
         }
 
         plugins {
-            id 'com.github.ben-manes.versions' version '0.51.0'
+            id 'com.github.ben-manes.versions'
             id 'java-gradle-plugin'
             ${applyJvmPlugin ? "id 'org.jetbrains.kotlin.jvm' version \"\$kotlin_version\"" : ''}
         }
@@ -69,7 +69,7 @@ final class KotlinDependencyUpdatesSpec extends Specification {
     testProjectDir.newFile('build.gradle') <<
       """
         plugins {
-            id 'com.github.ben-manes.versions' version '0.51.0'
+            id 'com.github.ben-manes.versions'
             id 'java-gradle-plugin'
         }
 
@@ -103,7 +103,7 @@ final class KotlinDependencyUpdatesSpec extends Specification {
     testProjectDir.newFile('build.gradle') <<
       """
         plugins {
-            id 'com.github.ben-manes.versions' version '0.51.0'
+            id 'com.github.ben-manes.versions'
             id 'org.jetbrains.kotlin.jvm' version '$DECLARED_KOTLIN_VERSION'
         }
 
