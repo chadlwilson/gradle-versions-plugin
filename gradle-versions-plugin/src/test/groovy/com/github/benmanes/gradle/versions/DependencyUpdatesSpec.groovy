@@ -17,6 +17,10 @@ package com.github.benmanes.gradle.versions
 
 import com.github.benmanes.gradle.versions.updates.OutputFormatterArgument
 import org.gradle.api.Action
+import org.gradle.testkit.runner.GradleRunner
+import org.junit.Rule
+import org.junit.rules.TemporaryFolder
+import spock.lang.See
 
 import static com.github.benmanes.gradle.versions.updates.gradle.GradleReleaseChannel.CURRENT
 import static com.github.benmanes.gradle.versions.updates.gradle.GradleReleaseChannel.RELEASE_CANDIDATE
@@ -32,12 +36,17 @@ import spock.lang.Issue
 import spock.lang.Specification
 import spock.lang.Unroll
 
+import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
+
 /**
  * A specification for the dependency updates task.
  */
 final class DependencyUpdatesSpec extends Specification {
 
   private static final String NONE_VERSION = 'none'
+
+  @Rule
+  final TemporaryFolder testProjectDir = new TemporaryFolder()
 
   def 'Single project with no dependencies for many formats'() {
     given:
@@ -632,6 +641,29 @@ final class DependencyUpdatesSpec extends Specification {
       downgradeVersions.isEmpty()
       undeclared.isEmpty()
     }
+  }
+
+  @Issue("https://github.com/ben-manes/gradle-versions-plugin/issues/930")
+  def "plugins that add configurations dynamically are properly handled"() {
+    given:
+    testProjectDir.newFile('build.gradle') <<
+      """
+        plugins {
+            id 'com.github.ben-manes.versions'
+            id 'io.quarkus' version '3.25.4'
+        }
+      """.stripIndent()
+
+    when:
+    def result = GradleRunner.create()
+      .withProjectDir(testProjectDir.root)
+      .withArguments('dependencyUpdates', '--info')
+      .withPluginClasspath()
+      .build()
+
+    then:
+    result.task(':dependencyUpdates').outcome == SUCCESS
+    result.output.find(/The following dependencies have later milestone versions:\n - io\.quarkus:io\.quarkus\.gradle\.plugin \[3\.25\.4 -> /)
   }
 
   private static def singleProject() {
